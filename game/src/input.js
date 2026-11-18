@@ -1,53 +1,73 @@
-// Keyboard and pointer input. Held keys give a steering direction; one-shot presses (start or
-// restart, pause) are queued as bit flags and taken once by the loop, so a press between two
-// frames is never lost and never counted twice.
+// Keyboard, pointer-lock mouse look, edge-triggered presses and logical-screen clicks.
+const HELD_KEYS = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ShiftLeft', 'ShiftRight']);
+const EDGE_KEYS = new Set([
+  'KeyE', 'KeyJ', 'Space', 'KeyP', 'Escape', 'KeyM', 'KeyR', 'KeyF', 'KeyH',
+  'F2', 'F3', 'Enter', 'Tab',
+]);
 
-export const ACTION_CONFIRM = 1;
-export const ACTION_PAUSE = 2;
-
-const LEFT = new Set(['ArrowLeft', 'KeyA']);
-const RIGHT = new Set(['ArrowRight', 'KeyD']);
-const CONFIRM = new Set(['Space', 'Enter']);
-const PAUSE = new Set(['KeyP', 'Escape']);
-
-export function createInput(target) {
-  let left = false;
-  let right = false;
-  let actions = 0;
+export function createInput(renderer) {
+  const keys = new Set();
+  const pressed = [];
+  const clicks = [];
+  const mouse = { dx: 0, dy: 0, down: false, aim: false, x: 0, y: 0, locked: false };
+  const canvas = document.getElementById('game');
 
   window.addEventListener('keydown', (event) => {
-    if (LEFT.has(event.code)) left = true;
-    else if (RIGHT.has(event.code)) right = true;
-    else if (CONFIRM.has(event.code)) {
-      if (!event.repeat) actions |= ACTION_CONFIRM;
-    } else if (PAUSE.has(event.code)) {
-      if (!event.repeat) actions |= ACTION_PAUSE;
-    } else return;
-    event.preventDefault();
+    if (HELD_KEYS.has(event.code) || EDGE_KEYS.has(event.code)) event.preventDefault();
+    if (!keys.has(event.code) && EDGE_KEYS.has(event.code)) pressed.push(event.code);
+    keys.add(event.code);
   });
-  window.addEventListener('keyup', (event) => {
-    if (LEFT.has(event.code)) left = false;
-    else if (RIGHT.has(event.code)) right = false;
+  window.addEventListener('keyup', (event) => keys.delete(event.code));
+  window.addEventListener('blur', () => { keys.clear(); mouse.down = false; mouse.aim = false; });
+
+  window.addEventListener('mousemove', (event) => {
+    mouse.x = event.clientX; mouse.y = event.clientY;
+    if (mouse.locked || mouse.down) {
+      mouse.dx += event.movementX || 0;
+      mouse.dy += event.movementY || 0;
+    }
   });
-  // A key released while the tab is hidden never sends keyup: let go of everything on blur.
-  window.addEventListener('blur', () => {
-    left = false;
-    right = false;
+  window.addEventListener('mousedown', (event) => {
+    mouse.x = event.clientX; mouse.y = event.clientY;
+    if (event.button === 0) {
+      mouse.down = true;
+      clicks.push(renderer.screenToLogical(event.clientX, event.clientY));
+    } else if (event.button === 2) {
+      mouse.aim = true;
+    }
   });
-  target.addEventListener('pointerdown', () => {
-    actions |= ACTION_CONFIRM;
+  window.addEventListener('mouseup', (event) => {
+    if (event.button === 0) mouse.down = false;
+    if (event.button === 2) mouse.aim = false;
+  });
+  window.addEventListener('contextmenu', (event) => event.preventDefault());
+  document.addEventListener('pointerlockchange', () => {
+    mouse.locked = Boolean(document.pointerLockElement);
   });
 
-  return {
-    /** -1 for left, 1 for right, 0 for neither or both. */
-    direction() {
-      return (right ? 1 : 0) - (left ? 1 : 0);
-    },
-    /** The one-shot presses since the last call, as ACTION_* flags. */
-    takeActions() {
-      const taken = actions;
-      actions = 0;
-      return taken;
-    },
-  };
+  function axis() {
+    return {
+      x: (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) - (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0),
+      z: (keys.has('KeyW') || keys.has('ArrowUp') ? 1 : 0) - (keys.has('KeyS') || keys.has('ArrowDown') ? 1 : 0),
+      sprint: keys.has('ShiftLeft') || keys.has('ShiftRight'),
+      handbrake: keys.has('KeyF'),
+    };
+  }
+
+  const presses = () => pressed.slice();
+  const takeClicks = () => clicks.slice();
+  function lock() {
+    if (canvas && canvas.requestPointerLock && document.pointerLockElement !== canvas) {
+      const result = canvas.requestPointerLock();
+      if (result && result.catch) result.catch(() => {});
+    }
+  }
+  function clear() {
+    pressed.length = 0;
+    clicks.length = 0;
+    mouse.dx = 0;
+    mouse.dy = 0;
+  }
+
+  return { axis, presses, clicks: takeClicks, mouse, clear, lock, isDown: (code) => keys.has(code) };
 }
