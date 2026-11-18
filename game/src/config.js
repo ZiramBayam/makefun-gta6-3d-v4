@@ -1,61 +1,86 @@
-// Every tuning number and colour in one place. The playfield is a fixed 1280x720 logical area;
-// the renderer scales it to the window, so no rule below depends on the screen size.
-
-export const FIELD = { width: 1280, height: 720, groundY: 664 };
-
-/** The simulation's fixed step, in seconds: 60 updates a second whatever the display's rate. */
+// Cielo Bay: Solar Noir — immutable tuning values shared by every module.
+export const SEED = 20261118;
 export const STEP = 1 / 60;
+export const MAX_FRAME = 0.25;
+export const VIEW = { width: 1280, height: 720 };
+export const SAVE_KEY = 'cielo-bay-3d-save';
 
-export const PLAYER = {
-  width: 72,
-  height: 24,
-  speed: 560,
-  invulnerable: 1.5,
-};
+export const CITY = { block: 160, cols: 9, rows: 9, harborX: 6, harborZ: 2 };
 
-export const LIVES = 3;
-
-export const BLOCK = {
-  minWidth: 40,
-  maxWidth: 110,
-  height: 36,
-  speed: 240,
-  speedPerLevel: 30,
-  speedJitter: 90,
-  interval: 0.55,
-  intervalScale: 0.88,
-  minInterval: 0.14,
-  dodgePoints: 1,
-};
-
-export const COIN = {
-  size: 24,
-  speed: 190,
-  speedPerLevel: 14,
-  interval: 1.4,
-  intervalJitter: 0.8,
-  points: 10,
-};
-
-/** Seconds of play per level, and the last level: speeds and spawn rates stop growing there. */
-export const LEVEL = { seconds: 12, max: 12 };
-
-/** How many falling things can exist at once; the pool is allocated once, at boot. */
-export const POOL_SIZE = 64;
-
+// Hex integers are consumed directly by the renderer; cssColor makes canvas textures.
 export const PALETTE = {
-  backdrop: '#11141b',
-  sky: '#1b1f2a',
-  ground: '#2a3040',
-  player: '#4fc3f7',
-  block: '#e5534b',
-  coin: '#f2c94c',
-  panel: '#252b38',
-  text: '#eef1f5',
-  muted: '#8b93a3',
+  ivory: 0xe8ddc4,
+  terracotta: 0xc96f4a,
+  coral: 0xff6b4a,
+  seaGlass: 0x5ce0c6,
+  glassBlue: 0x7fb8c9,
+  deepShadow: 0x071a24,
+  sunGold: 0xffd166,
+  paving: 0xf2e8d2,
+  asphalt: 0x8d7f70,
+  sidewalk: 0xe4d6b8,
+  roof: 0xa95338,
+  leaf: 0x467d51,
+  water: 0x36a89f,
+  glassTint: 0x9fc9d2,
+  white: 0xf7f1e3,
+  policeBlue: 0x35608a,
 };
 
-export const FONT = 'system-ui, -apple-system, "Segoe UI", sans-serif';
+export const cssColor = (hex) => '#' + (hex >>> 0).toString(16).padStart(6, '0');
 
-/** Where the best score is kept between visits (this browser only). */
-export const BEST_KEY = 'block-dodger.best';
+export const DISTRICTS = [
+  { name: 'Marisol Rows', color: 0xd98a63 },
+  { name: 'Palma Vista', color: 0xe0b04f },
+  { name: 'Puerto Alto', color: 0x5fc3b0 },
+  { name: 'Coral Causeway', color: 0xe07a6a },
+  { name: 'Old Customs House', color: 0xc9a06a },
+  { name: 'Solano Plaza', color: 0x8fb9c9 },
+  { name: 'Glass Mile', color: 0x7fb8c9 },
+  { name: 'Seawall South', color: 0x4fa8a0 },
+];
+
+export const MISSIONS = [
+  {
+    title: 'A Small Favour',
+    brief: 'Nia Vale left a parcel in Marisol Rows. Collect it, then take it to Solano Plaza.',
+    reward: 750,
+    kind: 'delivery',
+    dialogue: [
+      { who: 'Nia Vale', text: 'Courier work. Quiet, simple, paid. Collect the parcel and bring it to me at Solano Plaza.' },
+      { who: 'Nia Vale', text: 'Keep your head down and follow the gold light.' },
+    ],
+  },
+  {
+    title: 'The Harbour Van',
+    brief: 'Ines Marlow needs a van lifted from the harbour pier. Two crew are guarding it. Drive it to the garage in Puerto Alto.',
+    reward: 1400,
+    kind: 'theft',
+    dialogue: [
+      { who: 'Ines Marlow', text: 'The van is down by the pier. Two of Rafa’s men are watching it.' },
+      { who: 'Ines Marlow', text: 'Take it to the Puerto Alto garage. Try not to make a story of it.' },
+    ],
+  },
+  {
+    title: 'Causeway Runner',
+    brief: 'Rafa Solis wants a runner stopped on the Coral Causeway before he reaches the plaza.',
+    reward: 1800,
+    kind: 'chase',
+    dialogue: [
+      { who: 'Rafa Solis', text: 'There he is, heading for the causeway. Catch him before he melts into the traffic.' },
+    ],
+  },
+  {
+    title: 'The Plaza Reckoning',
+    brief: 'Ada Cruz is waiting at Solano Plaza. Four gangsters are waiting with her. Clear the plaza.',
+    reward: 3500,
+    kind: 'fight',
+    dialogue: [
+      { who: 'Ada Cruz', text: 'I asked them to talk. They brought four friends instead.' },
+      { who: 'Ada Cruz', text: 'Stay behind me. If one gets through, you finish it.' },
+    ],
+  },
+];
+
+// Menu actions are owned in one place so the renderer and the HUD agree.
+export const BUTTON_IDS = ['play', 'continue', 'controls', 'back', 'resume', 'save', 'mute', 'restart'];
