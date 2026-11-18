@@ -30,7 +30,8 @@ export function createAssets(THREE, random) {
   // Facade texture: a sunlit wall with a disciplined grid of windows and sills.
   const facade = (base, glass, rows, cols, key) => paint(key, 128, 256, (g, w, h) => {
     fill(g, base, 0, 0, w, h);
-    fill(g, 0x000000, 0, 0, 3, h);
+    g.globalAlpha = 0.24;
+    fill(g, PALETTE.deepShadow, 0, 0, 2, h);
     g.globalAlpha = 0.12;
     for (let x = 0; x < w; x += 16) fill(g, 0x071a24, x, 0, 2, h);
     g.globalAlpha = 1;
@@ -336,7 +337,7 @@ export function createAssets(THREE, random) {
     runner: [PALETTE.coral],
     gangster: [PALETTE.deepShadow],
     cop: [PALETTE.policeBlue],
-    named: [PALETTE.seaGlass, PALETTE.ivory],
+    named: [PALETTE.sunGold, PALETTE.ivory],
   };
   const makePed = (kind) => {
     const color = random.pick(pedPalette[kind] || pedPalette.civilian);

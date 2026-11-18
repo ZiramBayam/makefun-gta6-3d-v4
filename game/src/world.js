@@ -54,7 +54,7 @@ export function createWorld(city, random) {
   };
 
   // A parked car beside the spawn makes vehicle entry immediately discoverable.
-  const starter = spawnCar('sedan', spawn.x + 4, spawn.z + 1, 'x', 1, true);
+  const starter = spawnCar('sedan', spawn.x + 5, spawn.z + 4, 'x', 1, true);
   starter.tint = 'ivory';
   for (let i = 0; i < 18; i++) {
     const axis = random.chance(0.5) ? 'x' : 'z';

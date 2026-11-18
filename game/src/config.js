@@ -17,7 +17,7 @@ export const PALETTE = {
   deepShadow: 0x071a24,
   sunGold: 0xffd166,
   paving: 0xf2e8d2,
-  asphalt: 0x8d7f70,
+  asphalt: 0xc9b79c,
   sidewalk: 0xe4d6b8,
   roof: 0xa95338,
   leaf: 0x467d51,
