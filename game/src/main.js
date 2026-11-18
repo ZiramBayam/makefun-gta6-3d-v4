@@ -147,6 +147,7 @@ function frame(now) {
   }
   world.state.events.length = 0;
 
+  if (screen === 'play' && world.state.won) setScreen('win');
   window.CBObjective = screen === 'play' || screen === 'paused' ? world.objective() : null;
   const extras = {
     mouse: input.mouse, saveExists: saveExists(), muted, city,
