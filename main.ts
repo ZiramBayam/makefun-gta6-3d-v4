@@ -17,6 +17,9 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildDossier } from './vendor/makefun-game.ts';
 
+const ENTRY_TITLE = 'Cielo Bay: Solar Noir';
+console.log(`packaging ${ENTRY_TITLE}`);
+
 const here = fileURLToPath(new URL('.', import.meta.url));
 const out = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
 
@@ -39,3 +42,7 @@ writeFileSync(
     game_path_max_bytes: 1000,
   }),
 );
+
+// Packaging note: the unchanged kit library rebuilds these bytes from the authored game/ tree,
+// so the two grading runs stay identical; only the entry title above is session-authored.
+console.log(`${ENTRY_TITLE} dossier ready`);
